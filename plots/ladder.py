@@ -31,8 +31,6 @@ for i, (n1, n2, _ml, _ms) in enumerate(states):
         indices_to_keep.append(i)
 
 mat_2 = mat_2[indices_to_keep, :][:, indices_to_keep]
-mat_2_minus = mat_2_minus[indices_to_keep, :][:, indices_to_keep]
-mat_2_plus = mat_2_plus[indices_to_keep, :][:, indices_to_keep]
 states = np.array(states)[indices_to_keep]
 
 dc_field = 100
