@@ -104,7 +104,7 @@ def nlmlms_to_n1n2mlms(n) -> np.ndarray:
 if __name__ == '__main__':
     GENERATED_TRANSFORMATIONS_FOLDER.mkdir(exist_ok=True)
 
-    n = 35
+    n = 56
 
     transform = nljmj_to_nlmlms(n)
     np.savez_compressed(GENERATED_TRANSFORMATIONS_FOLDER / f"{n}_nljmj_to_nlmlms.npz", transform)

@@ -167,7 +167,7 @@ def load_hamiltonian(name: str):
 if __name__ == '__main__':
     GENERATED_HAMILTONIANS_FOLDER.mkdir(exist_ok=True)
 
-    n = 35
+    n = 56
     # stark_map = arc.StarkMap(arc.Hydrogen())
     stark_map = arc.StarkMap(arc.Rubidium())
 
