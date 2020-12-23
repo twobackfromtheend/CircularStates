@@ -1,5 +1,6 @@
 import logging
 from pathlib import Path
+from typing import Tuple
 
 import arc
 import numpy as np
@@ -146,7 +147,7 @@ def calculate_coupling(stark_map, n, l, j, mj, n2, l2, j2, mj2, q, s):
     return this_coupling
 
 
-def load_hamiltonian(name: str):
+def load_hamiltonian(name: str) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray,]:
     """
     Loads a Hamiltonian.
     :param name:
