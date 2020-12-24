@@ -7,7 +7,6 @@ from system.states import States, Basis
 from system.transformations.utils import load_transformation, transform_basis
 from timer import timer
 
-
 n = 56
 
 with timer("Generating states"):
@@ -22,16 +21,22 @@ else:
     raise RuntimeError("Could not find index for F ml=3 state.")
 
 with timer("Loading Hamiltonian"):
-    mat_1, mat_2, mat_2_minus, mat_2_plus = load_hamiltonian(f"{n}_rubidium")
+    # mat_1, mat_2, mat_2_minus, mat_2_plus = load_hamiltonian(f"{n}_rubidium")
+    mat_1, mat_2, mat_2_minus, mat_2_plus = load_hamiltonian(f"{n}_rubidium87")
     mat_2_combination = mat_2_plus + mat_2_minus
+    # mat_2_combination *= C_e / C_h * 1e-9
+    # mat_2_combination *= C_e * physical_constants["Bohr radius"][0]
+    mat_2_combination *= 1e-9
 
 with timer("Loading transformations"):
     transform_1 = load_transformation(n, Basis.N_L_J_MJ, Basis.N_L_ML_MS)
     transform_2 = load_transformation(n, Basis.N_L_ML_MS, Basis.N1_N2_ML_MS)
 
-with timer("Applying transformations"):
+with timer("Applying transformation to nlmlms"):
     mat_1 = transform_basis(mat_1, transform_1)
     mat_2 = transform_basis(mat_2, transform_1)
+    # mat_2_minus = transform_basis(mat_2_minus, transform_1)
+    # mat_2_plus = transform_basis(mat_2_plus, transform_1)
     mat_2_combination = transform_basis(mat_2_combination, transform_1)
 
 nlmlms_mat_1 = mat_1
@@ -43,9 +48,12 @@ def get_zero_energy(dc_field):
            + dc_field * nlmlms_mat_2[state_index_F_ml_3, state_index_F_ml_3]
 
 
-mat_1 = transform_basis(mat_1, transform_2)
-mat_2 = transform_basis(mat_2, transform_2)
-mat_2_combination = transform_basis(mat_2_combination, transform_2)
+with timer("Applying transformation to n1n2mlms"):
+    mat_1 = transform_basis(mat_1, transform_2)
+    mat_2 = transform_basis(mat_2, transform_2)
+    # mat_2_minus = transform_basis(mat_2_minus, transform_2)
+    # mat_2_plus = transform_basis(mat_2_plus, transform_2)
+    mat_2_combination = transform_basis(mat_2_combination, transform_2)
 
 with timer("Applying state filters"):
     indices_to_keep = []
@@ -60,21 +68,27 @@ with timer("Applying state filters"):
 
     mat_1 = mat_1[indices_to_keep, :][:, indices_to_keep]
     mat_2 = mat_2[indices_to_keep, :][:, indices_to_keep]
-    mat_2_minus = mat_2_minus[indices_to_keep, :][:, indices_to_keep]
-    mat_2_plus = mat_2_plus[indices_to_keep, :][:, indices_to_keep]
+    # mat_2_minus = mat_2_minus[indices_to_keep, :][:, indices_to_keep]
+    # mat_2_plus = mat_2_plus[indices_to_keep, :][:, indices_to_keep]
+    mat_2_combination = mat_2_combination[indices_to_keep, :][:, indices_to_keep]
     states = np.array(states)[indices_to_keep]
 
     states_count = len(states)
     print(f"Filtered states to {states_count}")
 
-
 timesteps = 500
 # dc_fields = np.linspace(500, 100, timesteps)
 # dc_fields = np.linspace(185, 140, timesteps)
-dc_fields = np.linspace(200, 170, timesteps)
-t = np.linspace(0, 1e-6, timesteps)
-rf_freq = 200e6 / 1e9
+dc_fields = np.linspace(200, 170, timesteps)  # V / m
+tau_A = 5e-6  # s
+t_p = 2 * tau_A
+t = np.linspace(0, t_p, timesteps)  # s
 
+rf_freq = 195e6 / 1e9  # GHz
+e_rf = 25  # V / m
+
+tau_A = 5e-6
+e_rf_t = e_rf * np.cos(2 * np.pi * t / t_p - np.pi / 2)
 
 energies = []
 energies_with_rf = []
@@ -90,9 +104,8 @@ for i, dc_field in enumerate(tqdm(dc_fields)):
     s = np.argmin(energy_diff[:n])
     zero_energy = eigenvalues[s]
     # print(s, reference_zero_energy, energy_diff[s])
-    detunings = np.zeros(2 * n - 1)
-    # for i in range(2 * n - 1):
-    for i in range(n):
+    detunings = np.zeros(states_count)
+    for i in range(2 * n - 1):
         if i >= states_count:
             break
         if i < n:
@@ -100,26 +113,16 @@ for i, dc_field in enumerate(tqdm(dc_fields)):
         else:
             detunings[i] = rf_freq - (eigenvalues[i - n + 1] - eigenvalues[i]) + detunings[i - n + 1]
 
-    energies.append(detunings[:n])
+    energies.append(detunings)
 
-    # rf_field = np.cos(t[i] * 2 * np.pi * rf_freq) * 10
-    # hamiltonian_with_rf = np.diagflat(detunings[:n])
-    # hamiltonian_with_rf += rf_field * (mat_2_minus + mat_2_plus)
-    #
-    # # e_rf = np.cos(t[i] * 2 * np.pi * rf_freq * 1e9)
-    # # ds = transform_basis(mat_2_plus + mat_2_minus, eigenvectors)
-    # # hamiltonian += ds * e_rf
-    # eigenvalues = []
-    # for i in range(n):
-    #     eigenvector = eigenvectors[:, i]
-    #     energy = hamiltonian_with_rf @ eigenvector
-    #     print(energy, energy.shape)
-    # #     break
-    # # break
-    # energies_with_rf.append(eigenvalues)
+    # Construct a new Hamiltonian using the no-RF detunings along the diagonal.
+    hamiltonian_with_rf = e_rf_t[i] * mat_2_combination + np.diagflat(detunings)
+
+    eigenvalues, eigenvectors = np.linalg.eigh(hamiltonian_with_rf)
+    energies_with_rf.append(eigenvalues)
 
 energies = np.array(energies)
-# energies_with_rf = np.array(energies_with_rf)
+energies_with_rf = np.array(energies_with_rf)
 
 fig, (ax1, ax2) = plt.subplots(1, 2, sharex='all', sharey='all')
 
@@ -131,14 +134,14 @@ for i in range(energies.shape[1]):
         alpha=0.1,
         s=3,
     )
-    # ax2.scatter(
-    #     t,
-    #     energies_with_rf[:, i],
-    #     color='C0',
-    #     alpha=0.1,
-    #     s=3,
-    # )
-
+for i in range(energies_with_rf.shape[1]):
+    ax2.scatter(
+        t,
+        energies_with_rf[:, i],
+        color='C0',
+        alpha=0.1,
+        s=3,
+    )
 
 
 def on_click(event):
@@ -184,7 +187,6 @@ def on_click(event):
 
 
 cid = fig.canvas.mpl_connect('button_press_event', on_click)
-
 
 plt.tight_layout()
 plt.show()
