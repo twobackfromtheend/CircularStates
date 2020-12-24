@@ -35,7 +35,8 @@ def transform_basis(matrix: np.ndarray, transform: np.ndarray) -> np.ndarray:
     :param transform:
     :return:
     """
-    return qutip.Qobj(matrix).transform(transform).full().real.astype(np.float64)
+    # return qutip.Qobj(matrix).transform(transform).full().real.astype(np.float64)
+    return transform @ matrix @ transform.T
 
 
 if __name__ == '__main__':
