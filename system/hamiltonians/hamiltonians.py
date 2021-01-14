@@ -65,7 +65,7 @@ def generate_matrices(n: int, stark_map: arc.StarkMap, s=0.5, with_zeeman_energy
         ) * C_e / C_h * 1e-9
         if with_zeeman_energy_shift:
             # This is not used, as with_zeeman_energy_shift is False
-            # TODO: Clean up (remove) or enable usage with non-zero magnetic field
+            # TODO: Enable usage with non-zero magnetic field
             zeeman_energy_shift = stark_map.atom.getZeemanEnergyShift(
                 l=l1,
                 j=j1,
@@ -113,8 +113,6 @@ def generate_matrices(n: int, stark_map: arc.StarkMap, s=0.5, with_zeeman_energy
             mat_2_plus[jj][ii] = coupling_3
             mat_2_plus[ii][jj] = coupling_3
 
-            # if coupling_1 != 0 or coupling_2 != 0 or coupling_3 != 0:
-            #     print(f"A: {coupling_1:.5f}, {coupling_2:.5f}, {coupling_3:.5f}")
     pbar.close()
     return states, (mat_1, mat_2, mat_2_minus, mat_2_plus)
 
@@ -127,8 +125,6 @@ def calculate_coupling(stark_map, n, l, j, mj, n2, l2, j2, mj2, q, s):
     which uses the arc.alkali_atom_functions.AlkaliAtom.getDipoleMatrixElement() method to calculate couplings to a
     laser.
     """
-    this_coupling = 0
-    # print((int(abs(l2 - l)) == 1), (int(abs(j2 - j)) <= 1), (int(abs(mj2 - mj - q)) == 0))
     if (int(abs(l2 - l)) == 1) and \
             (int(abs(j2 - j)) <= 1) and \
             (int(abs(mj2 - mj - q)) == 0):
@@ -141,10 +137,10 @@ def calculate_coupling(stark_map, n, l, j, mj, n2, l2, j2, mj2, q, s):
             q,
             s=s
         )
-        this_coupling += dipole_matrix_element
         # print(f"NON ZERO: {dipole_matrix_element}")
-    this_coupling = abs(this_coupling) ** 2
-    return this_coupling
+        return dipole_matrix_element
+    else:
+        return 0
 
 
 def load_hamiltonian(name: str) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray,]:

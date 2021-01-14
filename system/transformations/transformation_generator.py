@@ -58,6 +58,10 @@ def nlmlms_to_n1n2mlms(n) -> np.ndarray:
     Generates the transformation matrix for the transformation from the
     n, l, ml, ms basis to the n1, n2, ml, ms basis.
 
+    CG coefficients generated according to:
+        Park, D. Relation between the parabolic and spherical eigenfunctions of hydrogen. Z. Physik 159, 155–157 (1960).
+        https://doi.org/10.1007/BF01338343
+
     :param n:
     :return:
     """
@@ -76,11 +80,13 @@ def nlmlms_to_n1n2mlms(n) -> np.ndarray:
             if _ms != __ms:
                 continue
 
+            # Satisfies: -K <= k1, k2 <= K, m = k1 + k2, n = 2K + 1 = n1 + n2 + |m| + 1
             k1 = (_ml + n1 - n2) / 2
             k2 = (_ml - n1 + n2) / 2
             K = (n - 1) / 2
 
             try:
+                # See citation in docstring for source
                 coeff = CG(
                     j1=K, j2=K, j3=__l,
                     m1=k1, m2=k2, m3=__ml,
@@ -88,11 +94,6 @@ def nlmlms_to_n1n2mlms(n) -> np.ndarray:
                 coeff_sum += coeff ** 2
                 if coeff != 0:
                     transform[ii] += coeff * identity[jj]
-
-                    # _k = n2 - n1
-                    # if _k == 1 and _ml == n - 2:
-                    #     print(f"{__l}, {__ml}")
-
             except (ValueError, AttributeError):
                 continue
         if abs(coeff_sum - 1) > 1e-3:

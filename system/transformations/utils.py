@@ -36,7 +36,14 @@ def transform_basis(matrix: np.ndarray, transform: np.ndarray) -> np.ndarray:
     :return:
     """
     # return qutip.Qobj(matrix).transform(transform).full().real.astype(np.float64)
-    return transform @ matrix @ transform.T
+    if len(matrix.shape) != 2:
+        raise ValueError(f"Matrix to be transformed has to be 2D. Received shape: {matrix.shape}")
+    if matrix.shape[1] > 1:
+        assert matrix.shape[0] == matrix.shape[1]
+        return transform @ matrix @ transform.T
+    else:
+        assert matrix.shape[1] == 1
+        return transform @ matrix
 
 
 if __name__ == '__main__':
