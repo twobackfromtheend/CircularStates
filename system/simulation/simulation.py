@@ -51,6 +51,7 @@ class Simulation:
         with timer("Loading Hamiltonian"):
             mat_1, mat_2, mat_2_minus, mat_2_plus = load_hamiltonian(self.hamiltonian)
             mat_2_combination = mat_2_plus + mat_2_minus  # Units of a0 e
+            # mat_2_combination = mat_2_plus  # Units of a0 e
             mat_2_combination *= C_e * physical_constants["Bohr radius"][0] / C_hbar
             mat_2_combination *= 1e-9  # Convert Hz to GHz
 
@@ -76,7 +77,7 @@ class Simulation:
                     indices_to_keep.append(i)
 
             # Sort indices, first in increasing n1, then in increasing ml.
-            indices_to_keep = sorted(indices_to_keep, key=lambda x: (states[x][0], states[x][2]))
+            indices_to_keep = sorted(indices_to_keep, key=lambda i: (states[i][0], states[i][2]))
 
             # Filter matrices to only keep rows/columns pertaining to relevant states
             mat_1 = mat_1[indices_to_keep, :][:, indices_to_keep]
@@ -125,6 +126,7 @@ class Simulation:
             else:
                 detunings[i] = self.rf_freq - (eigenvalues[i - self.n + 1] - eigenvalues[i]) + detunings[i - self.n + 1]
 
+        detunings *= -1
         # Create Hamiltonian with RF couplings. Diagonal elements from detunings calculated above.
         hamiltonian_with_rf = self.rf_energy * self.mat_2_combination + np.diagflat(detunings)
         return qutip.Qobj(hamiltonian_with_rf)
@@ -132,18 +134,21 @@ class Simulation:
 
 if __name__ == '__main__':
     hamiltonian = "56_rubidium87"
+    hamiltonian = "56_strontium88"
     sim = Simulation(
         n=56,
         hamiltonian=hamiltonian,
         dc_field=(185, 140),
-        rf_freq=195e6 / 1e9,
-        rf_energy=25,
-        t=1,
+        rf_freq=175e6 / 1e9,
+        rf_energy=0.5,
+        t=10,
         timesteps=1000,
     )
     sim.setup()
     sim.run()
 
     import pickle
-    with open(f"{hamiltonian}.pkl", "wb") as f:
+    from system.simulation.utils import get_time_str
+
+    with open(f"{hamiltonian}_{get_time_str()}.pkl", "wb") as f:
         pickle.dump(sim, f)

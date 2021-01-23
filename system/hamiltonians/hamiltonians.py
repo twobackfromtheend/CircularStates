@@ -166,8 +166,9 @@ if __name__ == '__main__':
 
     n = 56
     # stark_map = arc.StarkMap(arc.Hydrogen())
+    stark_map = arc.StarkMap(arc.Strontium88())
     # stark_map = arc.StarkMap(arc.Rubidium())
-    stark_map = arc.StarkMap(arc.Rubidium87())
+    # stark_map = arc.StarkMap(arc.Rubidium87())
 
     states, matrices = generate_matrices(n, stark_map)
 
