@@ -15,9 +15,10 @@ class Simulation:
             self,
             n: int,
             hamiltonian: str,
-            dc_field: Tuple[int, int],
+            dc_field: Tuple[float, float],
             rf_freq: float,
             rf_energy: float,
+            magnetic_field: float,
             t: float,
             timesteps: int,
     ):
@@ -28,6 +29,7 @@ class Simulation:
         :param dc_field: Initial value for strength of DC field in units of V / m.
         :param rf_freq: F_{RF} in units of GHz
         :param rf_energy: E_{RF} in units of V / m
+        :param magnetic_field: B_z in units of Tesla
         :param t: Protocol duration in units of microseconds
         :param timesteps: Number of equally-spaced points in time at which the system state is calculated
         """
@@ -36,6 +38,7 @@ class Simulation:
         self.dc_field = dc_field
         self.rf_freq = rf_freq
         self.rf_energy = rf_energy
+        self.magnetic_field = magnetic_field
         self.t = t
         self.timesteps = timesteps
 
@@ -49,7 +52,7 @@ class Simulation:
             states = States(self.n, basis=Basis.N1_N2_ML_MS).states
 
         with timer("Loading Hamiltonian"):
-            mat_1, mat_2, mat_2_minus, mat_2_plus = load_hamiltonian(self.hamiltonian)
+            mat_1, mat_1_zeeman, mat_2, mat_2_minus, mat_2_plus = load_hamiltonian(self.hamiltonian)
             mat_2_combination = mat_2_plus + mat_2_minus  # Units of a0 e
             # mat_2_combination = mat_2_plus  # Units of a0 e
             mat_2_combination *= C_e * physical_constants["Bohr radius"][0] / C_hbar
@@ -61,11 +64,13 @@ class Simulation:
 
         with timer("Applying transformation to nlmlms"):
             mat_1 = transform_basis(mat_1, transform_1)
+            mat_1_zeeman = transform_basis(mat_1_zeeman, transform_1)
             mat_2 = transform_basis(mat_2, transform_1)
             mat_2_combination = transform_basis(mat_2_combination, transform_1)
 
         with timer("Applying transformation to n1n2mlms"):
             mat_1 = transform_basis(mat_1, transform_2)
+            mat_1_zeeman = transform_basis(mat_1_zeeman, transform_2)
             mat_2 = transform_basis(mat_2, transform_2)
             mat_2_combination = transform_basis(mat_2_combination, transform_2)
 
@@ -81,6 +86,7 @@ class Simulation:
 
             # Filter matrices to only keep rows/columns pertaining to relevant states
             mat_1 = mat_1[indices_to_keep, :][:, indices_to_keep]
+            mat_1_zeeman = mat_1_zeeman[indices_to_keep, :][:, indices_to_keep]
             mat_2 = mat_2[indices_to_keep, :][:, indices_to_keep]
             mat_2_combination = mat_2_combination[indices_to_keep, :][:, indices_to_keep]
 
@@ -91,6 +97,7 @@ class Simulation:
             print(f"Filtered states to {self.states_count}")
 
         self.mat_1 = mat_1
+        self.mat_1_zeeman = mat_1_zeeman
         self.mat_2 = mat_2
         self.mat_2_combination = mat_2_combination
 
@@ -113,7 +120,7 @@ class Simulation:
         """
         dc_field = self.dc_field[0] + t / 1000 / self.t * (self.dc_field[1] - self.dc_field[0])
 
-        hamiltonian = self.mat_1 + dc_field * self.mat_2
+        hamiltonian = self.mat_1 + self.magnetic_field * self.mat_1_zeeman + dc_field * self.mat_2
         eigenvalues = np.diagonal(hamiltonian)
         s = 3  # Index for zero-energy state: n1=0, ml=3
 
@@ -134,14 +141,15 @@ class Simulation:
 
 if __name__ == '__main__':
     hamiltonian = "56_rubidium87"
-    hamiltonian = "56_strontium88"
+    # hamiltonian = "56_strontium88"
     sim = Simulation(
         n=56,
         hamiltonian=hamiltonian,
-        dc_field=(185, 140),
-        rf_freq=175e6 / 1e9,
+        dc_field=(168.2, 135.9),
+        rf_freq=204.4e6 / 1e9,
         rf_energy=0.5,
-        t=10,
+        magnetic_field=27.55 / 10_000,  # 1 Tesla = 10 000 Gauss
+        t=0.1,
         timesteps=1000,
     )
     sim.setup()

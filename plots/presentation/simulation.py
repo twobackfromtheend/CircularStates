@@ -15,6 +15,10 @@ filename = "56_rubidium87_2021-01-19T13_44"
 filename = "56_rubidium87_2021-01-19T13_58"
 # filename = "56_rubidium87_2021-01-19T14_14"
 filename = "56_rubidium87_2021-01-19T15_03"
+filename = "56_rubidium87_2021-01-24T13_33"
+filename = "56_rubidium87_2021-01-24T14_49"
+filename = "56_rubidium87_2021-01-28T17_55"
+filename = "56_rubidium87_2021-01-29T01_18"
 
 with open(f"../../system/simulation/{filename}.pkl", "rb") as f:
     simulation: Simulation = pickle.load(f)
@@ -43,7 +47,8 @@ for i, t in enumerate(t_list):
         state_population = system_populations[j]
         if state_population > 0:
             ml_average += state_population * ml
-            mls[int(ml)] += state_population
+            if n1 == 0:
+                mls[int(ml)] += state_population
             n1s[int(n1)] += state_population
     system_mls.append(mls)
     system_ml_averages.append(ml_average)
@@ -102,14 +107,14 @@ im = ax2.imshow(
     system_mls,
     aspect='auto',
     # cmap=COLORMAP, norm=NORM,
-    norm=LogNorm(vmin=1e-2, vmax=1, clip=True),
+    # norm=LogNorm(vmin=1e-3, vmax=1, clip=True),
     origin='lower',
     extent=(0, t_list[-1], 0, max_ml)
 )
 # plt.colorbar(mappable=im, ax=ax2)
 
 ax2.set_ylim((0, max_ml - 1))
-ax2.set_ylabel("$m_l$")
+ax2.set_ylabel("$m_l$, $n_1 = 0$")
 
 system_n1s = np.array(system_n1s).T
 
@@ -127,7 +132,15 @@ ax3.plot(
 )
 ax3.plot(
     t_list,
+    system_n1s[0],
+    '--',
+    label="$\sum c$, $n_1 = 0$",
+    lw=3,
+)
+ax3.plot(
+    t_list,
     system_n1s[1],
+    '--',
     label="$\sum c$, $n_1 = 1$",
     lw=3,
 )
@@ -139,6 +152,6 @@ ax3.set_xlabel(r"$t$ [$\upmu$s]")
 
 # plt.tight_layout()
 
-save_current_fig(f'simulation_{filename}')
+save_current_fig(f'_simulation_{filename}')
 
 # plt.show()

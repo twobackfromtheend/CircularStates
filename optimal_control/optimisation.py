@@ -20,7 +20,8 @@ with timer("Setting up simulation"):
         dc_field=(185, 140),
         rf_freq=175e6 / 1e9,
         rf_energy=0.5,
-        t=10,
+        magnetic_field=15 / 10_000,
+        t=0.1,
         timesteps=1000,
     )
     sim.setup()
@@ -46,12 +47,14 @@ with timer("Getting f"):
         """
         outputs = []
         for input_ in inputs:
-            dc_start, dc_end, rf_freq = input_
+            dc_start, dc_end, rf_freq, rf_energy, magnetic_field = input_
             sim.dc_field = (dc_start, dc_end)
             sim.rf_freq = rf_freq
+            sim.rf_energy = rf_energy
+            sim.magnetic_field = magnetic_field
 
             sim.run()
-            output = figure_of_merit(sim)
+            output = -figure_of_merit(sim)
             print(f"FoM: {output} for input: {input_}")
             outputs.append(output)
         return np.array(outputs)
@@ -60,22 +63,32 @@ domain = [
     {
         'name': f'dc_start',
         'type': 'continuous',
-        'domain': [130, 200],
+        'domain': [50, 300],
     },
     {
         'name': f'dc_end',
         'type': 'continuous',
-        'domain': [130, 200],
+        'domain': [50, 300],
     },
     {
         'name': f'rf_freq',
         'type': 'continuous',
-        'domain': [150e6 / 1e9, 200e6 / 1e9],
+        'domain': [150e6 / 1e9, 250e6 / 1e9],
+    },
+    {
+        'name': f'rf_energy',
+        'type': 'continuous',
+        'domain': [0.01, 0.5],
+    },
+    {
+        'name': f'magnetic_field',
+        'type': 'continuous',
+        'domain': [0, 30 / 10_000],
     },
 ]
 
-max_iter = 50
-exploit_iter = 10
+max_iter = 300
+exploit_iter = 50
 
 with timer(f"Optimising f"):
     bo = optimise(
