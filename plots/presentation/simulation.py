@@ -5,6 +5,7 @@ import numpy as np
 import qutip
 from matplotlib.colors import LogNorm
 import matplotlib.pyplot as plt
+from scipy.interpolate import interp1d
 
 from plots.presentation.utils import setup_plot, save_current_fig, setup_upmu
 from system.simulation.simulation import Simulation
@@ -19,12 +20,19 @@ filename = "56_rubidium87_2021-01-24T13_33"
 filename = "56_rubidium87_2021-01-24T14_49"
 filename = "56_rubidium87_2021-01-28T17_55"
 filename = "56_rubidium87_2021-01-29T01_18"
+filename = "51_rubidium87_2021-02-10T17_42"
+filename = "51_rubidium87_2021-02-18T15_01"
+filename = "51_rubidium87_2021-02-22T06_22"
+filename = "51_rubidium87_2021-02-22T06_22"
+filename = "51_rubidium87_2021-02-25T15_05"
 
 with open(f"../../system/simulation/{filename}.pkl", "rb") as f:
     simulation: Simulation = pickle.load(f)
 
 print(simulation.dc_field)
 print(simulation.rf_energy)
+print(simulation.rf_freq)
+print(simulation.t)
 
 systems: List[qutip.Qobj] = simulation.results.states
 
@@ -75,21 +83,29 @@ fig, (ax1, ax2, ax3) = plt.subplots(
 
 e_rf_t, = ax1.plot(
     t_list,
-    np.sin(t_list / t_list[-1] * np.pi) * simulation.rf_energy,
-    label=r"$E_{\mathrm{RF}}$ [V $\mathrm{cm}^{-1}$]",
+    # np.sin(t_list / t_list[-1] * np.pi) * simulation.rf_energy * 10,
+    np.cos(t_list * simulation.rf_freq * 1000 * 2 * np.pi) * simulation.rf_energy * 10,  # Factor of 10 to convert V/m to mV/cm
     c="C0",
     lw=3,
 )
 _ax1 = ax1.twinx()
+
+dc_field_calculator = interp1d(
+    np.linspace(0, 1, len(simulation.dc_field)),
+    simulation.dc_field,
+    kind='quadratic',
+    bounds_error=False,
+    fill_value=0,
+)
 e_dc_t, = _ax1.plot(
     t_list,
-    (simulation.dc_field[0] + t_list / t_list[-1] * (simulation.dc_field[1] - simulation.dc_field[0])) / 100,
-    label=r"$E_{\mathrm{d.c.}}$ [V $\mathrm{cm}^{-1}$]",
+    dc_field_calculator(t_list / t_list[-1]) / 100,
+    # (simulation.dc_field[0] + t_list / t_list[-1] * (simulation.dc_field[1] - simulation.dc_field[0])) / 100,
     c="C1",
     lw=3,
 )
 
-ax1.set_ylabel(r"$E_{\mathrm{RF}}$  [V $\mathrm{cm}^{-1}$]")
+ax1.set_ylabel(r"$E_{\mathrm{RF}}$  [mV $\mathrm{cm}^{-1}$]")
 _ax1.set_ylabel(r"$E_{\mathrm{d.c.}}$  [V $\mathrm{cm}^{-1}$]")
 
 ax1.yaxis.label.set_color(e_rf_t.get_color())
