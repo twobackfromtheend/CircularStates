@@ -155,28 +155,6 @@ def get_domain(
         },
     ]
 
-    # TODO
-    # Try for ml=1 and 2 initial state
-    # Fix e_rf axis label on plot
-    # Fix rf_energy envelope plot (remove manually plotted envelope, just plot cos(omega_rf t)
-    # Add envelope for B?
-
-    # Add envelope for E_RF
-    # Create plot with E_RF time-dependent amplitude (and envelope),
-    # Add B field to top panel of plot.
-
-    # TODO
-    # Try switch off B field, fix rf_freq = 230 MHz
-    # Try 3 time slices instead of 4 per control
-    # Try ml = 2
-    # Rename rf_energy to rf_field
-    # Use 1ms duration
-    # Move conversion of mat_2_plus and mat_2_minus to GHz into hamiltonian.py, to mirror mat_1 and mat_2.
-    # rename Simulation.t to t_p
-    # Add option to limit sigma plus and minus to be selective on n1
-
-    # Look at m_s taking + and - instead of discarding negatives
-
 
 
 

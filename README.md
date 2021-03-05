@@ -50,3 +50,24 @@ The following command should include all necessary packages:
 `pip install numpy scipy matplotlib ARC-Alkali-Rydberg-Calculator qutip tqdm`
 
  
+### TODO
+
+#### Optimisation
+- Reduce optimisation parameters:
+    - Switch off B field, fix rf_freq = 230 MHz
+    - 3 time slices instead of 4 per control
+- Use default ml = 2
+- Use 1ms duration
+
+#### Code
+- Refactor: Move conversion of mat_2_plus and mat_2_minus to GHz into hamiltonian.py, to mirror mat_1 and mat_2.
+- Rename rf_energy to rf_field
+- Rename Simulation.t to t_p
+
+#### Simulation
+- Add option to limit sigma plus and minus to be selective on n1
+- Look at m_s taking + and - instead of discarding negatives
+- Use either s=0 or 1 for Sr
+
+#### Plot
+- Add B field to top panel of plot.
