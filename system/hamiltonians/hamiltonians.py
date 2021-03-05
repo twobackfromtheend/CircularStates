@@ -160,7 +160,7 @@ def load_hamiltonian(name: str) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.
 if __name__ == '__main__':
     GENERATED_HAMILTONIANS_FOLDER.mkdir(exist_ok=True)
 
-    n = 56
+    n = 51
     # stark_map = arc.StarkMap(arc.Hydrogen())
     # stark_map = arc.StarkMap(arc.Strontium88())
     # stark_map = arc.StarkMap(arc.Rubidium())
