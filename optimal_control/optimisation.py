@@ -21,13 +21,13 @@ with timer("Setting up simulation"):
         n=n,
         hamiltonian=hamiltonian,
         dc_field=(185, 140),
-        rf_freq=175e6 / 1e9,
-        rf_energy=0.5,
+        rf_freq=200e6 / 1e9,
+        rf_field=0.5,
         magnetic_field=15 / 10_000,
-        t=0.1,
+        t=0.2,
         timesteps=1000,
     )
-    sim.setup()
+    sim.setup(keep_mat_2_minus=False)
 
 with timer("Getting f"):
     # def figure_of_merit(sim: Simulation):
@@ -64,17 +64,34 @@ with timer("Getting f"):
         """
         outputs = []
         for input_ in inputs:
-            # dc_0, dc_1, dc_2, rf_freq, rf_energy, magnetic_field = input_
-            # dc_0, dc_1, dc_2, rf_freq, rf_energy_0, rf_energy_1, rf_energy_2, magnetic_field = input_
-            # dc_0, dc_1, dc_2, rf_freq, rf_energy_0, rf_energy_1, rf_energy_2, rf_energy_3, rf_energy_4, magnetic_field = input_
-            dc_0, dc_1, dc_2, dc_3, rf_freq, rf_energy_0, rf_energy_1, rf_energy_2, rf_energy_3, magnetic_field_0, magnetic_field_1, magnetic_field_2, magnetic_field_3 = input_
-            sim.dc_field = (dc_0, dc_1, dc_2, dc_3)
-            sim.rf_freq = rf_freq
-            sim.rf_energy = (rf_energy_0, rf_energy_1, rf_energy_2, rf_energy_3)
-            sim.magnetic_field = (magnetic_field_0, magnetic_field_1, magnetic_field_2, magnetic_field_3)
+            # dc_0, dc_1, dc_2, rf_freq, rf_field, magnetic_field = input_
+            # dc_0, dc_1, dc_2, rf_freq, rf_field_0, rf_field_1, rf_field_2, magnetic_field = input_
+            # dc_0, dc_1, dc_2, rf_freq, rf_field_0, rf_field_1, rf_field_2, rf_field_3, rf_field_4, magnetic_field = input_
+            # dc_0, dc_1, dc_2, dc_3, rf_freq, rf_field_0, rf_field_1, rf_field_2, rf_field_3, magnetic_field_0, magnetic_field_1, magnetic_field_2, magnetic_field_3 = input_
+            # dc_0, dc_1, dc_2, rf_freq, rf_field_0, rf_field_1, rf_field_2 = input_
+            # dc_0, dc_1, rf_field_0, rf_field_1, rf_field_2 = input_
+            # dc_0, dc_1, rf_field_0, rf_field_1, rf_field_2, rf_field_3, rf_field_4, rf_field_5 = input_
+            # sim.dc_field = (dc_0, dc_1, dc_2, dc_3)
+            # sim.rf_freq = rf_freq
+            # sim.rf_field = (rf_field_0, rf_field_1, rf_field_2, rf_field_3)
+            # sim.magnetic_field = (magnetic_field_0, magnetic_field_1, magnetic_field_2, magnetic_field_3)
+            # sim.dc_field = (dc_0, dc_1)
+            # dc_0, dc_1, rf_field_0, rf_field_1, rf_field_2, rf_field_3, rf_field_4, rf_field_5 = input_
+            dc_1, rf_field_0, rf_field_1, rf_field_2, rf_field_3, rf_field_4 = input_
+            # dc_1, rf_field_0, rf_field_1, rf_field_2, rf_field_3, rf_field_4, t = input_
+            sim.dc_field = (250, dc_1)
+            # rf_field_0, rf_field_1, rf_field_2, rf_field_3, rf_field_4 = input_
+            # sim.dc_field = (300, 300)
+            # sim.rf_field = (rf_field_0, rf_field_1, rf_field_2)
+            sim.rf_field = (rf_field_0, rf_field_1, rf_field_2, rf_field_3, rf_field_4)
+            # sim.rf_field = (rf_field_0, rf_field_1, rf_field_2, rf_field_3, rf_field_4, rf_field_5)
+            sim.rf_freq = 210e6 / 1e9
+            sim.magnetic_field = 0
+            # sim.magnetic_field = 30 / 10_000
+            # sim.t = t
 
-            # sim.run(initial_state_index=3)
-            sim.diagnostic_run(initial_state_index=3)
+            sim.run(initial_state_index=2)
+            # sim.diagnostic_run(initial_state_index=3)
             output = -figure_of_merit(sim)
             print(f"FoM: {output} for input: {input_}")
             outputs.append(output)
@@ -83,9 +100,9 @@ with timer("Getting f"):
 
 def get_domain(
         dc_field: Tuple[float, float],
-        rf_freq: Tuple[float, float],
-        rf_energy: Tuple[float, float],
-        magnetic_field: Tuple[float, float]
+        # rf_freq: Tuple[float, float],
+        rf_field: Tuple[float, float],
+        # magnetic_field: Tuple[float, float]
 ):
     return [
         {
@@ -93,78 +110,96 @@ def get_domain(
             'type': 'continuous',
             'domain': dc_field,
         },
+        # {
+        #     'name': f'dc_1',
+        #     'type': 'continuous',
+        #     'domain': dc_field,
+        # },
+        # {
+        #     'name': f'dc_2',
+        #     'type': 'continuous',
+        #     'domain': dc_field,
+        # },
+        # {
+        #     'name': f'dc_3',
+        #     'type': 'continuous',
+        #     'domain': dc_field,
+        # },
+        # {
+        #     'name': f'rf_freq',
+        #     'type': 'continuous',
+        #     'domain': rf_freq,
+        # },
         {
-            'name': f'dc_1',
+            'name': f'rf_field_0',
             'type': 'continuous',
-            'domain': dc_field,
+            'domain': rf_field,
         },
         {
-            'name': f'dc_2',
+            'name': f'rf_field_1',
             'type': 'continuous',
-            'domain': dc_field,
+            'domain': rf_field,
         },
         {
-            'name': f'dc_3',
+            'name': f'rf_field_2',
             'type': 'continuous',
-            'domain': dc_field,
+            'domain': rf_field,
         },
         {
-            'name': f'rf_freq',
+            'name': f'rf_field_3',
             'type': 'continuous',
-            'domain': rf_freq,
+            'domain': rf_field,
         },
         {
-            'name': f'rf_energy_0',
+            'name': f'rf_field_4',
             'type': 'continuous',
-            'domain': rf_energy,
+            'domain': rf_field,
         },
-        {
-            'name': f'rf_energy_1',
-            'type': 'continuous',
-            'domain': rf_energy,
-        },
-        {
-            'name': f'rf_energy_2',
-            'type': 'continuous',
-            'domain': rf_energy,
-        },
-        {
-            'name': f'rf_energy_3',
-            'type': 'continuous',
-            'domain': rf_energy,
-        },
-        {
-            'name': f'magnetic_field_0',
-            'type': 'continuous',
-            'domain': magnetic_field,
-        },
-        {
-            'name': f'magnetic_field_1',
-            'type': 'continuous',
-            'domain': magnetic_field,
-        },
-        {
-            'name': f'magnetic_field_2',
-            'type': 'continuous',
-            'domain': magnetic_field,
-        },
-        {
-            'name': f'magnetic_field_3',
-            'type': 'continuous',
-            'domain': magnetic_field,
-        },
+        # {
+        #     'name': f'rf_field_4',
+        #     'type': 'continuous',
+        #     'domain': rf_field,
+        # },
+        # {
+        #     'name': f't',
+        #     'type': 'continuous',
+        #     'domain': (0.05, 0.1),
+        # },
+        # {
+        #     'name': f'rf_field_5',
+        #     'type': 'continuous',
+        #     'domain': rf_field,
+        # },
+        # {
+        #     'name': f'magnetic_field_0',
+        #     'type': 'continuous',
+        #     'domain': magnetic_field,
+        # },
+        # {
+        #     'name': f'magnetic_field_1',
+        #     'type': 'continuous',
+        #     'domain': magnetic_field,
+        # },
+        # {
+        #     'name': f'magnetic_field_2',
+        #     'type': 'continuous',
+        #     'domain': magnetic_field,
+        # },
+        # {
+        #     'name': f'magnetic_field_3',
+        #     'type': 'continuous',
+        #     'domain': magnetic_field,
+        # },
     ]
 
 
-
-
-
 domain = get_domain(
-    dc_field=(50, 400),  # 234.5 V / m =  2.346 V / cm
-    rf_freq=(150e6 / 1e9, 250e6 / 1e9),
-    rf_energy=(0.01, 5.0),  # 4.6 V / m  = 46 mV / cm
-    magnetic_field=(0, 30 / 10_000),
+    dc_field=(100, 250),  # 234.5 V / m =  2.346 V / cm
+    # rf_freq=(150e6 / 1e9, 250e6 / 1e9),
+    rf_field=(0.5, 5.0),  # 4.6 V / m  = 46 mV / cm
+    # magnetic_field=(0, 30 / 10_000),
 )
+
 
 max_iter = 1000
 exploit_iter = 50
@@ -179,3 +214,4 @@ with timer(f"Optimising f"):
 
     print("x_opt", bo.x_opt)
     print("fx_opt", bo.fx_opt)
+

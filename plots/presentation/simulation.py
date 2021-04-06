@@ -9,6 +9,7 @@ from scipy.interpolate import interp1d
 
 from plots.presentation.utils import setup_plot, save_current_fig, setup_upmu
 from system.simulation.simulation import Simulation
+from system.simulation.utils import tukey
 
 filename = "56_rubidium87_2021-01-16T19_05"
 filename = "56_rubidium87_2021-01-19T12_01"
@@ -25,12 +26,38 @@ filename = "51_rubidium87_2021-02-18T15_01"
 filename = "51_rubidium87_2021-02-22T06_22"
 filename = "51_rubidium87_2021-02-22T06_22"
 filename = "51_rubidium87_2021-02-25T15_05"
+filename = "51_rubidium87_2021-03-11T06_50"
+filename = "51_rubidium87_2021-03-11T06_43"
+filename = "51_rubidium87_2021-03-11T15_26"
+filename = "51_rubidium87_2021-03-12T17_06"
+filename = "51_rubidium87_2021-03-12T17_15"
+filename = "51_rubidium87_2021-03-12T17_29"
+filename = "51_rubidium87_2021-03-12T17_42"
+filename = "51_rubidium87_2021-03-12T18_03"
+filename = "51_rubidium87_2021-03-16T15_47"
+filename = "51_rubidium87_2021-03-16T16_37"
+filename = "51_rubidium87_2021-03-16T16_50"
+filename = "51_rubidium87_2021-03-16T17_00"
+filename = "51_rubidium87_2021-03-17T01_14"
+filename = "51_rubidium87_2021-03-17T11_42"
+filename = "51_rubidium87_2021-03-18T08_18"
+filename = "51_rubidium87_2021-03-18T08_18"
+filename = "51_rubidium87_2021-03-18T12_52"
+filename = "51_rubidium87_2021-03-18T14_33"
+filename = "51_rubidium87_2021-03-23T13_32"
+filename = "51_rubidium87_2021-03-30T06_55"
+filename = "51_rubidium87_2021-03-30T07_06"
+filename = "51_rubidium87_2021-04-06T15_02"
 
 with open(f"../../system/simulation/{filename}.pkl", "rb") as f:
     simulation: Simulation = pickle.load(f)
 
+if not hasattr(simulation, 'rf_field'):
+    # Migrate old name
+    simulation.rf_field = simulation.rf_energy
+
 print(simulation.dc_field)
-print(simulation.rf_energy)
+print(simulation.rf_field)
 print(simulation.rf_freq)
 print(simulation.t)
 
@@ -81,25 +108,31 @@ fig, (ax1, ax2, ax3) = plt.subplots(
 #     system_ml_averages,
 # )
 
+
+tukey_timesteps = 5000
+rf_window = tukey(timesteps=tukey_timesteps, alpha=0.3)
+
+
+def window_fn(t):
+    return rf_window(t / 1000 / simulation.t * tukey_timesteps)
+
+
+rf_field_calculator = simulation.get_calculator(simulation.rf_field, window_fn=window_fn)
+rf_field = np.array([rf_field_calculator(t * 1000) for t in t_list])
 e_rf_t, = ax1.plot(
     t_list,
-    # np.sin(t_list / t_list[-1] * np.pi) * simulation.rf_energy * 10,
-    np.cos(t_list * simulation.rf_freq * 1000 * 2 * np.pi) * simulation.rf_energy * 10,  # Factor of 10 to convert V/m to mV/cm
+    # np.sin(t_list / t_list[-1] * np.pi) * simulation.rf_field * 10,
+    np.cos(t_list * simulation.rf_freq * 1000 * 2 * np.pi) * rf_field * 10,  # Factor of 10 to convert V/m to mV/cm
     c="C0",
     lw=3,
 )
 _ax1 = ax1.twinx()
 
-dc_field_calculator = interp1d(
-    np.linspace(0, 1, len(simulation.dc_field)),
-    simulation.dc_field,
-    kind='quadratic',
-    bounds_error=False,
-    fill_value=0,
-)
+dc_field_calculator = simulation.get_calculator(simulation.dc_field)
+dc_field = np.array([dc_field_calculator(t * 1000) for t in t_list])
 e_dc_t, = _ax1.plot(
     t_list,
-    dc_field_calculator(t_list / t_list[-1]) / 100,
+    dc_field / 100,
     # (simulation.dc_field[0] + t_list / t_list[-1] * (simulation.dc_field[1] - simulation.dc_field[0])) / 100,
     c="C1",
     lw=3,
@@ -122,6 +155,7 @@ system_mls = np.clip(system_mls, 1e-10, 1)
 im = ax2.imshow(
     system_mls,
     aspect='auto',
+    cmap=plt.get_cmap('Blues'),
     # cmap=COLORMAP, norm=NORM,
     # norm=LogNorm(vmin=1e-3, vmax=1, clip=True),
     origin='lower',
@@ -136,8 +170,8 @@ system_n1s = np.array(system_n1s).T
 
 ax3.plot(
     t_list,
-    system_mls[3],
-    label="$c_3$, $n_1 = 0$",
+    system_mls[simulation.initial_state_index],
+    label=f"$c_{simulation.initial_state_index}$, $n_1 = 0$",
     lw=3,
 )
 ax3.plot(

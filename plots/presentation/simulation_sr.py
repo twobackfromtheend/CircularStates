@@ -16,7 +16,7 @@ with open(f"../../system/simulation/{filename}.pkl", "rb") as f:
     simulation: Simulation = pickle.load(f)
 
 print(simulation.dc_field)
-print(simulation.rf_energy)
+print(simulation.rf_field)
 
 systems: List[qutip.Qobj] = simulation.results.states
 
@@ -66,7 +66,7 @@ fig, (ax1, ax2, ax3) = plt.subplots(
 
 e_rf_t, = ax1.plot(
     t_list,
-    np.sin(t_list / t_list[-1] * np.pi) * simulation.rf_energy,
+    np.sin(t_list / t_list[-1] * np.pi) * simulation.rf_field,
     label=r"$E_{\mathrm{RF}}$ [V $\mathrm{cm}^{-1}$]",
     c="C0",
     lw=3,

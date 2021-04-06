@@ -60,5 +60,12 @@ def optimise(
     print(f"Optimised controls: {bo.x_opt}")
     return bo
 
+def calculate_pi_pulse(dc_field_domain):
+    rabi_freq = magnitude(
+        average(dc_field_domain)  # Estimate of E
+        * typical_dipole_matrix_element # E.g. dipole from m2 to m3
+    )
+    # Actual freq: 2 * d . E / hbar
+
 
 __all__ = ['optimise']

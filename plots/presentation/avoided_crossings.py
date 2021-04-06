@@ -22,7 +22,7 @@ with timer("Generating states"):
     states = States(n, basis=Basis.N1_N2_ML_MS).states
 
 with timer("Loading Hamiltonian"):
-    mat_1, mat_2, mat_2_minus, mat_2_plus = load_hamiltonian(f"{n}_rubidium87")
+    mat_1, mat_1_zeeman, mat_2, mat_2_minus, mat_2_plus = load_hamiltonian(f"{n}_rubidium87")
     mat_2_combination = mat_2_plus + mat_2_minus  # Units of a0 e
     mat_2_combination *= C_e * physical_constants["Bohr radius"][0] / C_hbar
     # Conversion from atomic units for dipole matrix elements to a Rabi freq in Hz
@@ -172,6 +172,6 @@ ax2.set_xlabel(r"$E_{\mathrm{d.c.}}$ [V $\mathrm{cm}^{-1}$]")
 
 plt.tight_layout(pad=0.5)
 
-save_current_fig('avoided_crossings')
+# save_current_fig('avoided_crossings')
 
 plt.show()

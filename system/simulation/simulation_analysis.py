@@ -20,11 +20,12 @@ from system.simulation.simulation import Simulation
 # with open("56_rubidium87_2021-01-17T20_18.pkl", "rb") as f:
 # with open("56_rubidium87_2021-01-17T20_49.pkl", "rb") as f:
 # with open("56_rubidium87_2021-01-24T13_33.pkl", "rb") as f:
-with open("56_rubidium87_2021-01-28T17_47.pkl", "rb") as f:
+# with open("56_rubidium87_2021-01-28T17_47.pkl", "rb") as f:
+with open("51_rubidium87_2021-03-12T17_06.pkl", "rb") as f:
     simulation: Simulation = pickle.load(f)
 
 print(simulation.dc_field)
-print(simulation.rf_energy)
+print(simulation.rf_field)
 
 systems: List[qutip.Qobj] = simulation.results.states
 

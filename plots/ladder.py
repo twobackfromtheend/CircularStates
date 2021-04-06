@@ -7,16 +7,14 @@ from system.states import States, Basis
 from system.transformations.utils import load_transformation, transform_basis
 from timer import timer
 
-n = 56
+n = 51
 
 with timer("Generating states"):
     states_n_l_ml_ms = States(n, basis=Basis.N_L_ML_MS).states
     states = States(n, basis=Basis.N1_N2_ML_MS).states
 
 with timer("Loading Hamiltonian"):
-    mat_1, mat_2, mat_2_minus, mat_2_plus = load_hamiltonian("56_rubidium")
-    # mat_1, mat_2, mat_2_minus, mat_2_plus = load_hamiltonian("35_rubidium")
-    # mat_1, mat_2, mat_2_minus, mat_2_plus = load_hamiltonian("35_hydrogen")
+    mat_1, mat_1_zeeman, mat_2, mat_2_minus, mat_2_plus = load_hamiltonian("51_rubidium87")
 
 with timer("Loading transformations"):
     transform_1 = load_transformation(n, Basis.N_L_J_MJ, Basis.N_L_ML_MS)
@@ -35,7 +33,7 @@ with timer("Applying state filters"):
     mat_2 = mat_2[indices_to_keep, :][:, indices_to_keep]
     states = np.array(states)[indices_to_keep]
 
-dc_field = 100
+dc_field = 230
 
 x = []
 y = []
