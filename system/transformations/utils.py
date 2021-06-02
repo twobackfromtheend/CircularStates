@@ -17,6 +17,9 @@ def load_transformation(n: int, source_basis: Basis, target_basis: Basis) -> np.
     if source_basis == Basis.N_L_J_MJ and target_basis == Basis.N_L_ML_MS:
         with np.load(GENERATED_TRANSFORMATIONS_FOLDER / f"{n}_nljmj_to_nlmlms.npz") as data:
             return data[data.files[0]]
+    elif source_basis == Basis.N_L_J_MJ_RELEVANT and target_basis == Basis.N_L_ML_MS_RELEVANT:
+        with np.load(GENERATED_TRANSFORMATIONS_FOLDER / f"{n}_nljmj_to_nlmlms_relevant.npz") as data:
+            return data[data.files[0]]
     elif source_basis == Basis.N_L_ML_MS and target_basis == Basis.N1_N2_ML_MS:
         with np.load(GENERATED_TRANSFORMATIONS_FOLDER / f"{n}_nlmlms_to_n1n2mlms.npz") as data:
             return data[data.files[0]]

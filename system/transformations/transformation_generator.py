@@ -22,6 +22,8 @@ def nljmj_to_nlmlms(n) -> np.ndarray:
     """
     source_states = States(n, Basis.N_L_J_MJ)
     target_states = States(n, Basis.N_L_ML_MS)
+    # source_states = States(n, Basis.N_L_J_MJ_RELEVANT)
+    # target_states = States(n, Basis.N_L_ML_MS_RELEVANT)
 
     dimension = len(source_states.states)
     identity = np.identity(dimension)
@@ -107,8 +109,8 @@ if __name__ == '__main__':
 
     n = 51
 
-    transform = nljmj_to_nlmlms(n)
-    np.savez_compressed(GENERATED_TRANSFORMATIONS_FOLDER / f"{n}_nljmj_to_nlmlms.npz", transform)
+    # transform = nljmj_to_nlmlms(n)
+    # np.savez_compressed(GENERATED_TRANSFORMATIONS_FOLDER / f"{n}_nljmj_to_nlmlms.npz", transform)
 
     transform = nlmlms_to_n1n2mlms(n)
     np.savez_compressed(GENERATED_TRANSFORMATIONS_FOLDER / f"{n}_nlmlms_to_n1n2mlms.npz", transform)

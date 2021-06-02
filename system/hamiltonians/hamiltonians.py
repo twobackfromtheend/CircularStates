@@ -5,8 +5,7 @@ from typing import Tuple
 import arc
 import numpy as np
 from arc.alkali_atom_functions import _EFieldCoupling
-from scipy.constants import e as C_e
-from scipy.constants import h as C_h
+from scipy.constants import e as C_e, h as C_h, hbar as C_hbar, physical_constants
 from tqdm import tqdm
 
 from system.states import States, Basis
@@ -14,6 +13,8 @@ from system.states import States, Basis
 logger = logging.getLogger("hamiltonian_generator")
 
 GENERATED_HAMILTONIANS_FOLDER = Path(__file__).parent / "generated_hamiltonians"
+
+C_a_0 = physical_constants["Bohr radius"][0]
 
 
 def generate_matrices(n: int, stark_map: arc.StarkMap, s=0.5):
@@ -39,7 +40,8 @@ def generate_matrices(n: int, stark_map: arc.StarkMap, s=0.5):
     wignerPrecal = True
     stark_map.eFieldCouplingSaved = _EFieldCoupling()
 
-    states = States(n, Basis.N_L_J_MJ).states
+    # states = States(n, Basis.N_L_J_MJ).states
+    states = States(n, Basis.N_L_J_MJ_RELEVANT).states
 
     dimension = len(states)
     print(f"Dimension: {dimension}", flush=True)
@@ -84,9 +86,16 @@ def generate_matrices(n: int, stark_map: arc.StarkMap, s=0.5):
                 j2=j2, mj2=mj2,
                 s=stark_map.s
             ) * 1.e-9 / C_h
-            # Scaling (as is also done in the arc package) so this can be multiplied by an E field in units of GHz
+            # Scaling (as is also done in the arc package) so this can be multiplied by an E field (in V/m) to yield units of GHz.
             mat_2[jj][ii] = coupling_1
             mat_2[ii][jj] = coupling_1
+    pbar.close()
+
+    pbar = tqdm(desc="Generating matrices 2", total=dimension)
+    for ii in range(dimension):
+        for jj in range(dimension):
+            n1, l1, j1, mj1 = states[ii]
+            n2, l2, j2, mj2 = states[jj]
 
             ### mat_2_minus and mat_2_plus
             coupling_2 = calculate_coupling(
@@ -95,8 +104,7 @@ def generate_matrices(n: int, stark_map: arc.StarkMap, s=0.5):
                 n2, l2, j2, mj2,
                 -1,
                 s,
-            )
-            mat_2_minus[jj][ii] = coupling_2
+            ) * C_e * C_a_0 * 1.e-9 / C_hbar
             mat_2_minus[ii][jj] = coupling_2
 
             coupling_3 = calculate_coupling(
@@ -105,9 +113,9 @@ def generate_matrices(n: int, stark_map: arc.StarkMap, s=0.5):
                 n2, l2, j2, mj2,
                 1,
                 s,
-            )
-            mat_2_plus[jj][ii] = coupling_3
+            ) * C_e * C_a_0 * 1.e-9 / C_hbar
             mat_2_plus[ii][jj] = coupling_3
+        pbar.update(1)
 
     pbar.close()
     return states, (mat_1, mat_1_zeeman, mat_2, mat_2_minus, mat_2_plus)
@@ -161,14 +169,16 @@ if __name__ == '__main__':
     GENERATED_HAMILTONIANS_FOLDER.mkdir(exist_ok=True)
 
     n = 51
-    # stark_map = arc.StarkMap(arc.Hydrogen())
+    # n = 56
+    stark_map = arc.StarkMap(arc.Hydrogen())
     # stark_map = arc.StarkMap(arc.Strontium88())
     # stark_map = arc.StarkMap(arc.Rubidium())
-    stark_map = arc.StarkMap(arc.Rubidium87())
+    # stark_map = arc.StarkMap(arc.Rubidium87())
 
     states, matrices = generate_matrices(n, stark_map)
 
-    save_file_name = f"{n}_{stark_map.atom.__class__.__name__.lower()}.npz"
+    # save_file_name = f"{n}_{stark_map.atom.__class__.__name__.lower()}.npz"
+    save_file_name = f"{n}_{stark_map.atom.__class__.__name__.lower()}_relevant.npz"
     np.savez_compressed(
         GENERATED_HAMILTONIANS_FOLDER / save_file_name,
         mat_1=matrices[0],
