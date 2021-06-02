@@ -5,10 +5,10 @@ import matplotlib.pyplot as plt
 PLOTS_FOLDER_PATH = Path(r"plots")
 
 
-def setup_plot():
+def setup_plot(figsize=(5, 3.5)):
     plt.rc('text', usetex=True)
     plt.rc('font', family="serif", serif="CMU Serif")
-    plt.rc('figure', figsize=(5, 3.5))
+    plt.rc('figure', figsize=figsize)
     plt.rc('font', size=16)
 
 def setup_upmu():

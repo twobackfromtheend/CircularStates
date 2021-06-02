@@ -14,7 +14,8 @@ with timer("Generating states"):
     states = States(n, basis=Basis.N1_N2_ML_MS).states
 
 with timer("Loading Hamiltonian"):
-    mat_1, mat_1_zeeman, mat_2, mat_2_minus, mat_2_plus = load_hamiltonian("51_rubidium87")
+    # mat_1, mat_1_zeeman, mat_2, mat_2_minus, mat_2_plus = load_hamiltonian("51_rubidium87")
+    mat_1, mat_1_zeeman, mat_2, mat_2_minus, mat_2_plus = load_hamiltonian("_51_rubidium87")
 
 with timer("Loading transformations"):
     transform_1 = load_transformation(n, Basis.N_L_J_MJ, Basis.N_L_ML_MS)

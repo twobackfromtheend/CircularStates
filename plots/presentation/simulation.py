@@ -10,6 +10,7 @@ from scipy.interpolate import interp1d
 from plots.presentation.utils import setup_plot, save_current_fig, setup_upmu
 from system.simulation.simulation import Simulation
 from system.simulation.utils import tukey
+from system.states import States, Basis
 
 filename = "56_rubidium87_2021-01-16T19_05"
 filename = "56_rubidium87_2021-01-19T12_01"
@@ -48,8 +49,31 @@ filename = "51_rubidium87_2021-03-23T13_32"
 filename = "51_rubidium87_2021-03-30T06_55"
 filename = "51_rubidium87_2021-03-30T07_06"
 filename = "51_rubidium87_2021-04-06T15_02"
+filename = "51_rubidium87_2021-04-07T11_19"
+filename = "51_rubidium87_2021-04-07T14_50"
+filename = "51_rubidium87_2021-04-07T21_09"
+filename = "51_rubidium87_2021-04-08T10_08"
+filename = "51_rubidium87_2021-04-08T12_49"
+filename = "51_rubidium87_2021-04-08T15_10"
+filename = "51_rubidium87_2021-04-15T11_35"
+filename = "51_rubidium87_2021-04-15T18_43"
+filename = "51_rubidium87_2021-04-15T18_50"
+filename = "51_rubidium87_2021-04-16T12_31"
+filename = "_51_rubidium87_2021-05-06T10_25"
+filename = "_51_rubidium87_2021-05-06T19_06"
+filename = "_51_rubidium87_2021-05-09T18_28"
+filename = "51_rubidium87_2021-05-16T19_47.pkl"
+filename = "51_rubidium87_2021-05-17T14_59_.pkl"
+filename = "51_rubidium87_2021-05-17T15_17.pkl"
+filename = "51_rubidium87_2021-05-17T15_52_.pkl"
+filename = "51_rubidium87_2021-05-17T16_14_.pkl"
+filename = "51_rubidium87_2021-05-17T17_41_.pkl"
+filename = "51_rubidium87_2021-05-17T17_51_.pkl"
+filename = "51_rubidium87_2021-05-18T21_45_.pkl"
+filename = "51_rubidium87_relevant_2021-05-21T14_22_.pkl"
+filename = "51_rubidium87_relevant_2021-05-21T14_51_.pkl"
 
-with open(f"../../system/simulation/{filename}.pkl", "rb") as f:
+with open(f"../../system/simulation/saved_simulations/{filename}", "rb") as f:
     simulation: Simulation = pickle.load(f)
 
 if not hasattr(simulation, 'rf_field'):
@@ -63,7 +87,16 @@ print(simulation.t)
 
 systems: List[qutip.Qobj] = simulation.results.states
 
-state_mls = [state[2] for state in simulation.states]
+states = States(51, Basis.N1_N2_ML_MS).states
+indices_to_keep = []
+for i, (n1, n2, ml, ms) in enumerate(states):
+    if (n1 == 0 or n1 == 1) and ml >= 0 and ms > 0:
+        indices_to_keep.append(i)
+indices_to_keep = sorted(indices_to_keep, key=lambda i: (states[i][0], states[i][2]))
+states = np.array(states)[indices_to_keep]
+
+state_mls = [state[2] for state in states]
+
 max_ml = int(max(state_mls))
 
 t_list = np.linspace(0, simulation.t, simulation.timesteps + 1)
@@ -78,7 +111,7 @@ for i, t in enumerate(t_list):
     n1s = np.zeros(2)
     system_populations = np.abs(system.data.toarray()) ** 2
     for j in range(simulation.states_count):
-        n1, n2, ml, ms = simulation.states[j]
+        n1, n2, ml, ms = states[j]
         state_population = system_populations[j]
         if state_population > 0:
             ml_average += state_population * ml
@@ -157,7 +190,7 @@ im = ax2.imshow(
     aspect='auto',
     cmap=plt.get_cmap('Blues'),
     # cmap=COLORMAP, norm=NORM,
-    # norm=LogNorm(vmin=1e-3, vmax=1, clip=True),
+    norm=LogNorm(vmin=1e-3, vmax=1, clip=True),
     origin='lower',
     extent=(0, t_list[-1], 0, max_ml)
 )
@@ -168,18 +201,23 @@ ax2.set_ylabel("$m_l$, $n_1 = 0$")
 
 system_n1s = np.array(system_n1s).T
 
+# Initial state
 ax3.plot(
     t_list,
-    system_mls[simulation.initial_state_index],
-    label=f"$c_{simulation.initial_state_index}$, $n_1 = 0$",
+    system_mls[3],
+    label=f"$c_{3}$, $n_1 = 0$",
     lw=3,
 )
+
+# Circular state
 ax3.plot(
     t_list,
     system_mls[-1],
     label="$c_{n - 1}$",
     lw=3,
 )
+
+# n1 = 0
 ax3.plot(
     t_list,
     system_n1s[0],
@@ -187,6 +225,8 @@ ax3.plot(
     label="$\sum c$, $n_1 = 0$",
     lw=3,
 )
+
+# n1 = 1
 ax3.plot(
     t_list,
     system_n1s[1],
@@ -194,6 +234,7 @@ ax3.plot(
     label="$\sum c$, $n_1 = 1$",
     lw=3,
 )
+
 ax3.legend(fontsize='x-small')
 
 ax3.set_ylim((0, 1))
