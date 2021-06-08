@@ -115,7 +115,6 @@ class Simulation:
         self.rf_field_calculator = self.get_calculator(
             self.rf_field, window_fn=window_fn,
         )
-        self.magnetic_field_calculator = self.get_calculator(self.magnetic_field)
 
         self._calculate_hamiltonian_n1n2(self.dc_field_calculator(0))
 
