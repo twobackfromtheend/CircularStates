@@ -238,14 +238,26 @@ class Simulation:
                 )
                 return lambda t: interp(t) * window_fn(t)
 
+    def debug_plots(self):
+        self.setup_run()
+        t_list = np.linspace(0, self.t * 1000, self.timesteps + 1)
+        t = t_list[-1] / 2
+        hamiltonian = self.get_hamiltonian(t)
+        dc_field = self.dc_field_calculator(t)
+        rf_field = self.rf_field_calculator(t)
+        print(f"dc_field: {dc_field}")
+        print(f"rf_field: {rf_field}")
+
+        plot_matrices([self.mat_1,  self.mat_2, self._hamiltonian_n1n2, rf_field * self._mat_2_combination_n1n2 / 2, hamiltonian.data.toarray()])
+
 
 if __name__ == '__main__':
     hamiltonian = "51_rubidium87_relevant"
 
     rf_freq = 230e6 / 1e9
 
-    dc_field = [250, 200]
-    rf_field = (4.0, 4.6, 4.6, 4.6, 4.0)
+    dc_field = 230
+    rf_field = (4.6, 4.6, 4.6, 4.6, 4.6)
 
     sim = Simulation(
         n=51,
@@ -257,6 +269,11 @@ if __name__ == '__main__':
         timesteps=5000,
     )
     sim.setup()
+    debug_plot = False
+    if debug_plot:
+        sim.debug_plots()
+        raise RuntimeError
+
     sim.new_run()
 
 
