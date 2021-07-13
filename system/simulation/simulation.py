@@ -90,7 +90,7 @@ class Simulation:
 
     def new_run(self):
         self.setup_run()
-        t_list = np.linspace(0, self.t * 1000, self.timesteps + 1)  # Use self.t (in ms) to creat t_list in ns
+        t_list = np.linspace(0, self.t * 1000, self.timesteps + 1)  # Use self.t (in ms) to create t_list in ns
         # TODO: Remove test.
         # initial_state = qutip.basis(self.states_count, 0)
         initial_state = qutip.basis(self.states_count, 3)
@@ -238,8 +238,9 @@ class Simulation:
                 )
                 return lambda t: interp(t) * window_fn(t)
 
-    def debug_plots(self):
-        self.setup_run()
+    def debug_plots(self, skip_setup=False):
+        if not skip_setup:
+            self.setup_run()
         t_list = np.linspace(0, self.t * 1000, self.timesteps + 1)
         t = t_list[-1] / 2
         hamiltonian = self.get_hamiltonian(t)
@@ -257,22 +258,24 @@ if __name__ == '__main__':
     rf_freq = 230e6 / 1e9
 
     dc_field = 230
-    rf_field = (4.6, 4.6, 4.6, 4.6, 4.6)
-
+    x_opt = [0.21644331, 0.2261482,  0.19206465, 0.92503022, 0.73438651, 0.8841535,  0.60324382, 0.51779542]
+    x_opt = [0.23661313 ,0.2235796,  0.22936457 ,0.99896096, 0.83527214 ,0.99032028, 0.99907476, 0.98790491]
+    rf_freq = x_opt[:3]
+    rf_field = x_opt[3:]
     sim = Simulation(
         n=51,
         hamiltonian=hamiltonian,
         dc_field=dc_field,
         rf_freq=rf_freq,
         rf_field=rf_field,
-        t=1.5,
+        t=2,
         timesteps=5000,
     )
     sim.setup()
-    debug_plot = False
-    if debug_plot:
-        sim.debug_plots()
-        raise RuntimeError
+    # debug_plot = True
+    # if debug_plot:
+    #     sim.debug_plots()
+    #     raise RuntimeError
 
     sim.new_run()
 
@@ -280,8 +283,8 @@ if __name__ == '__main__':
     import pickle
     from system.simulation.utils import get_time_str
 
-    # del sim.dc_field_calculator
+    del sim.dc_field_calculator
     del sim.rf_field_calculator
-    del sim.magnetic_field_calculator
+    del sim.rf_freq_calculator
     with open(f"saved_simulations/{hamiltonian}_{get_time_str()}_.pkl", "wb") as f:
         pickle.dump(sim, f)
