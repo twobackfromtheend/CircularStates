@@ -2,7 +2,7 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 
-PLOTS_FOLDER_PATH = Path(r"plots")
+PLOTS_FOLDER_PATH = Path(__file__).parent / "plots"
 
 
 def setup_plot(figsize=(5, 3.5)):
