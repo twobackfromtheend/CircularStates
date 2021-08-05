@@ -7,9 +7,16 @@ from system.simulation.simulation import Simulation
 def custom_run(sim):
     sim.setup_run()
 
-    sim.dc_field_calculator = sim.get_calculator((250, 210                                                                                           ))
+    _raw_dc_calculator = sim.get_calculator((270, 210))
+    sim.dc_field_calculator = lambda t: _raw_dc_calculator(t).round(1)
+    # def test(t):
+    #     x = _raw_dc_calculator(t)
+    #     print("hi")
+    #     return x
+    # sim.dc_field_calculator = test
     sim.rf_freq_calculator = sim.get_calculator(230e6 / 1e9)
-    sim.rf_field_calculator = lambda t: 3 * np.sin(np.pi * t / 1000 / sim.t)
+    # sim.rf_field_calculator = lambda t: 3 * np.sin(np.pi * t / 1000 / sim.t)
+    sim.rf_field_calculator = lambda t: 25 * np.sin(np.pi * t / 1000 / sim.t)
 
     t_list = np.linspace(0, sim.t * 1000, sim.timesteps + 1)  # Use self.t (in ms) to create t_list in ns
     initial_state = qutip.basis(sim.states_count, 3)
@@ -36,8 +43,8 @@ if __name__ == '__main__':
         dc_field=dc_field,
         rf_freq=rf_freq,
         rf_field=rf_field,
-        t=2,
-        timesteps=5000,
+        t=10,
+        timesteps=3000,
     )
     sim.setup()
 

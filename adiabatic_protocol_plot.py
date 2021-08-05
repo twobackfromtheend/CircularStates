@@ -13,11 +13,18 @@ from system.simulation.utils import tukey
 from system.states import States, Basis
 
 filename = "51_rubidium87_relevant_2021-07-08T13_37_.pkl"
+filename = "51_rubidium87_relevant_2021-07-29T16_39_.pkl"
+filename = "51_rubidium87_relevant_2021-07-29T22_13_.pkl"
+filename = "51_rubidium87_relevant_2021-07-30T00_52_.pkl"
 
 with open(f"system/simulation/saved_simulations/{filename}", "rb") as f:
     simulation: Simulation = pickle.load(f)
+2
+# _raw_dc_calculator = simulation.get_calculator((270, 230))
+# simulation.dc_field_calculator = lambda _t: _raw_dc_calculator(_t).round(1)
+_raw_dc_calculator = simulation.get_calculator((270, 210))
+simulation.dc_field_calculator = lambda _t: _raw_dc_calculator(_t).round(1)
 
-simulation.dc_field_calculator = simulation.get_calculator((250, 210                                                                                           ))
 simulation.rf_freq_calculator = simulation.get_calculator(230e6 / 1e9)
 simulation.rf_field_calculator = lambda t: 3 * np.sin(np.pi * t / 1000 / simulation.t)
 
