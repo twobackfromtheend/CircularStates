@@ -103,11 +103,12 @@ class Simulation:
         )
 
     def setup_run(self):
-        self.dc_field_calculator = self.get_calculator(self.dc_field)
+        self.dc_field_calculator = self.get_calculator(self.dc_field, discretize=1)
         self.rf_freq_calculator = self.get_calculator(self.rf_freq)
 
         tukey_timesteps = 5000
-        rf_window = tukey(tukey_timesteps, 0.1)  # Define Tukey window width (alpha = 0.1)
+        # rf_window = tukey(tukey_timesteps, 0.1)  # Define Tukey window width (alpha = 0.1)
+        rf_window = tukey(tukey_timesteps, 0.5)  # Define Tukey window width (alpha = 0.1)
 
         def window_fn(t):
             return rf_window(t / 1000 / self.t * tukey_timesteps)
@@ -202,7 +203,7 @@ class Simulation:
         hamiltonian_with_rf = rf_field * self._mat_2_combination_n1n2 + np.diagflat(_eigenvalues)
         return qutip.Qobj(hamiltonian_with_rf)
 
-    def get_calculator(self, value: Union[float, Sequence[float]], window_fn=None, x=None):
+    def get_calculator(self, value: Union[float, Sequence[float]], window_fn=None, x=None, discretize: int=None):
         """Gets a function that takes t (in nanoseconds) and returns a value.
 
         Used for generating the DC field, RF energy, and magnetic field from parameters.
@@ -216,13 +217,17 @@ class Simulation:
             else:
                 kind = 'quadratic' if len(value) > 2 else 'linear'
                 interp_x = np.linspace(0, self.t * 1000, len(value)) if x is None else x
-                return interp1d(
-                    interp_x,
-                    value,
-                    kind=kind,
-                    bounds_error=False,
-                    fill_value=0,
-                )
+                interp = interp1d(
+                        interp_x,
+                        value,
+                        kind=kind,
+                        bounds_error=False,
+                        fill_value=0,
+                    )
+                if discretize is None:
+                    return interp
+                else:
+                    return lambda t: interp(t).round(discretize)
         else:
             if isinstance(value, float):
                 return lambda t: value * window_fn(t)
@@ -236,7 +241,10 @@ class Simulation:
                     bounds_error=False,
                     fill_value=0,
                 )
-                return lambda t: interp(t) * window_fn(t)
+                if discretize is None:
+                    return lambda t: interp(t) * window_fn(t)
+                else:
+                    return lambda t: interp(t).round(discretize) * window_fn(t)
 
     def debug_plots(self, skip_setup=False):
         if not skip_setup:
@@ -251,6 +259,49 @@ class Simulation:
 
         plot_matrices([self.mat_1,  self.mat_2, self._hamiltonian_n1n2, rf_field * self._mat_2_combination_n1n2 / 2, hamiltonian.data.toarray()])
 
+
+class ProtocolFieldCalculator:
+    def __init__(self, value: Union[float, Sequence[float]], t, window_fn=None, x=None):
+        self.value = value
+        self.t = t
+        self.window_fn = window_fn
+        self.x = x
+
+    def get_calculator(self):
+        """Gets a function that takes t (in nanoseconds) and returns a value.
+
+        Used for generating the DC field, RF energy, and magnetic field from parameters.
+        :param value: Parameter to generate a function for.
+            Either a float or a sequence of floats
+        :return:
+        """
+        if self.window_fn is None:
+            if isinstance(self.value, float) or isinstance(self.value, int):
+                return lambda t: self.value
+            else:
+                kind = 'quadratic' if len(self.value) > 2 else 'linear'
+                interp_x = np.linspace(0, self.t * 1000, len(self.value)) if self.x is None else self.x
+                return interp1d(
+                    interp_x,
+                    self.value,
+                    kind=kind,
+                    bounds_error=False,
+                    fill_value=0,
+                )
+        else:
+            if isinstance(self.value, float):
+                return lambda t: self.value * self.window_fn(t)
+            else:
+                kind = 'quadratic' if len(self.value) > 2 else 'linear'
+                interp_x = np.linspace(0, self.t * 1000, len(self.value)) if self.x is None else self.x
+                interp = interp1d(
+                    interp_x,
+                    self.value,
+                    kind=kind,
+                    bounds_error=False,
+                    fill_value=0,
+                )
+                return lambda t: interp(t) * self.window_fn(t)
 
 if __name__ == '__main__':
     hamiltonian = "51_rubidium87_relevant"

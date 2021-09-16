@@ -17,7 +17,8 @@ def plot_matrices(matrices):
             # matrix,
             interpolation='nearest',
             # norm=LogNorm(),
-            norm=LogNorm(vmin=1e-3),
+            # norm=LogNorm(vmin=1e-3),
+            norm=LogNorm(vmin=1e-2),
             # norm=SymLogNorm(1),
         )
         plt.colorbar()

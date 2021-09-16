@@ -72,6 +72,9 @@ filename = "51_rubidium87_2021-05-17T17_51_.pkl"
 filename = "51_rubidium87_2021-05-18T21_45_.pkl"
 filename = "51_rubidium87_relevant_2021-05-21T14_22_.pkl"
 filename = "51_rubidium87_relevant_2021-05-21T14_51_.pkl"
+filename = "51_rubidium87_relevant_2021-06-17T11_19_.pkl"
+filename = "51_rubidium87_relevant_2021-06-17T15_02_.pkl"
+filename = "51_rubidium87_relevant_2021-06-20T12_29_.pkl"
 
 with open(f"../../system/simulation/saved_simulations/{filename}", "rb") as f:
     simulation: Simulation = pickle.load(f)
@@ -152,10 +155,13 @@ def window_fn(t):
 
 rf_field_calculator = simulation.get_calculator(simulation.rf_field, window_fn=window_fn)
 rf_field = np.array([rf_field_calculator(t * 1000) for t in t_list])
+rf_freq_calculator = simulation.get_calculator(simulation.rf_freq)
+rf_freq = np.array([rf_freq_calculator(t * 1000) for t in t_list])
+
 e_rf_t, = ax1.plot(
     t_list,
     # np.sin(t_list / t_list[-1] * np.pi) * simulation.rf_field * 10,
-    np.cos(t_list * simulation.rf_freq * 1000 * 2 * np.pi) * rf_field * 10,  # Factor of 10 to convert V/m to mV/cm
+    np.cos(t_list * rf_freq * 1000 * 2 * np.pi) * rf_field * 10,  # Factor of 10 to convert V/m to mV/cm
     c="C0",
     lw=3,
 )
@@ -216,6 +222,7 @@ ax3.plot(
     label="$c_{n - 1}$",
     lw=3,
 )
+print(f"c_n-1: {system_mls[-1][-1]}")
 
 # n1 = 0
 ax3.plot(

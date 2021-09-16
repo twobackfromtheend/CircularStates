@@ -6,12 +6,9 @@ from GPyOpt.methods import BayesianOptimization
 from qutip import Qobj, mesolve, Options
 from scipy.integrate import simps as simpson
 
-from timer import timer
-
 print = partial(print, flush=True)
 
 METHOD = 1  # Set 1 or 2
-
 
 ### Method 1 Setup ###
 if METHOD == 1:
@@ -45,18 +42,17 @@ if METHOD == 1:
         time_independent_terms = Qobj(np.zeros((2, 2)) + V6 * 1e9 * rcrt @ rcrt.T)
         Omega_coeff_terms = Qobj((rcrt @ rc1t.T + rc1t @ rcrt.T) / 2)
 
-        with timer("Solving"):
-            solver = mesolve(
-                [
-                    time_independent_terms,
-                    [Omega_coeff_terms, Omega]
-                ],
-                psi_0,
-                t_list,
-                options=Options(store_states=True, nsteps=20000),
-            )
-            c_r1 = np.abs(solver.states[-1].data[1, 0])
-            return c_r1
+        solver = mesolve(
+            [
+                time_independent_terms,
+                [Omega_coeff_terms, Omega]
+            ],
+            psi_0,
+            t_list,
+            options=Options(store_states=True, nsteps=20000),
+        )
+        c_r1 = np.abs(solver.states[-1].data[1, 0])
+        return c_r1
 
 
     def method_1_f(inputs: np.ndarray):
@@ -73,7 +69,6 @@ if METHOD == 1:
 
 
     f = method_1_f
-
 
 ### Method 2 Setup ###
 if METHOD == 2:
@@ -111,18 +106,18 @@ if METHOD == 2:
         time_independent_terms = Qobj(np.zeros((3, 3)) + Vdd * 1e9 * rcrt @ rcrt.T)
         Omega_coeff_terms = Qobj((rcrt @ rc1t.T + rc1t @ rcrt.T) / 2)
 
-        with timer("Solving"):
-            solver = mesolve(
-                [
-                    time_independent_terms,
-                    [Omega_coeff_terms, Omega]
-                ],
-                psi_0,
-                t_list,
-                options=Options(store_states=True, nsteps=20000),
-            )
-            c_r1 = np.abs(solver.states[-1].data[1, 0])
-            return c_r1
+        solver = mesolve(
+            [
+                time_independent_terms,
+                [Omega_coeff_terms, Omega]
+            ],
+            psi_0,
+            t_list,
+            options=Options(store_states=True, nsteps=20000),
+        )
+        c_r1 = np.abs(solver.states[-1].data[1, 0])
+        return c_r1
+
 
     def method_2_f(inputs: np.ndarray):
         """
@@ -135,6 +130,9 @@ if METHOD == 2:
             outputs.append(output)
             print(f"FoM: {output} for input: {input_}")
         return np.array(outputs)
+
+
+    f = method_1_f
 
 domain = [
     {
@@ -203,13 +201,12 @@ def optimise(
     return bo
 
 
-with timer(f"Optimising f"):
-    bo = optimise(
-        f,
-        domain,
-        max_iter=max_iter,
-        exploit_iter=exploit_iter,
-    )
+bo = optimise(
+    f,
+    domain,
+    max_iter=max_iter,
+    exploit_iter=exploit_iter,
+)
 
-    print("x_opt", bo.x_opt)
-    print("fx_opt", bo.fx_opt)
+print("x_opt", bo.x_opt)
+print("fx_opt", bo.fx_opt)

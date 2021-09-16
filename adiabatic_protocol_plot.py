@@ -1,4 +1,4 @@
-import pickle
+import dill as pickle
 from typing import List
 
 import numpy as np
@@ -16,17 +16,31 @@ filename = "51_rubidium87_relevant_2021-07-08T13_37_.pkl"
 filename = "51_rubidium87_relevant_2021-07-29T16_39_.pkl"
 filename = "51_rubidium87_relevant_2021-07-29T22_13_.pkl"
 filename = "51_rubidium87_relevant_2021-07-30T00_52_.pkl"
+filename = "51_rubidium87_relevant_2021-08-05T02_40_.pkl"
+filename = "51_rubidium87_relevant_2021-08-08T13_42_.pkl"
+filename = "51_rubidium87_relevant_21*021-08-08T14_56_.pkl"
+filename = "51_rubidium87_relevant_2021-08-08T18_54_.pkl"
+filename = "51_rubidium87_relevant_2021-08-09T02_34_.pkl"
+filename = "51_rubidium87_relevant_2021-08-09T13_23_.pkl"
+filename = "51_rubidium87_relevant_2021-08-09T13_47_.pkl"
+filename = "51_rubidium87_relevant_2021-08-09T14_36_.pkl"
+filename = "51_rubidium87_relevant_2021-08-09T15_28_.pkl"
+filename = "51_rubidium87_relevant_2021-08-09T16_27_.pkl"
+filename = "51_rubidium87_relevant_2021-08-09T17_12_.pkl"
+filename = "51_rubidium87_relevant_2021-08-09T17_37.pkl"
+filename = "51_rubidium87_relevant_2021-08-09T18_12.pkl"
+filename = "60_rubidium87_relevant_2021-08-19T16_58.pkl"
 
 with open(f"system/simulation/saved_simulations/{filename}", "rb") as f:
     simulation: Simulation = pickle.load(f)
-2
+
 # _raw_dc_calculator = simulation.get_calculator((270, 230))
 # simulation.dc_field_calculator = lambda _t: _raw_dc_calculator(_t).round(1)
-_raw_dc_calculator = simulation.get_calculator((270, 210))
-simulation.dc_field_calculator = lambda _t: _raw_dc_calculator(_t).round(1)
-
-simulation.rf_freq_calculator = simulation.get_calculator(230e6 / 1e9)
-simulation.rf_field_calculator = lambda t: 3 * np.sin(np.pi * t / 1000 / simulation.t)
+# _raw_dc_calculator = simulation.get_calculator((270, 210))
+# simulation.dc_field_calculator = lambda _t: _raw_dc_calculator(_t).round(1)
+#
+# simulation.rf_freq_calculator = simulation.get_calculator(230e6 / 1e9)
+# simulation.rf_field_calculator = lambda t: 3 * np.sin(np.pi * t / 1000 / simulation.t)
 
 print(simulation.dc_field)
 print(simulation.rf_field)
@@ -35,7 +49,7 @@ print(simulation.t)
 
 systems: List[qutip.Qobj] = simulation.results.states
 
-states = States(51, Basis.N1_N2_ML_MS).states
+states = States(simulation.n, Basis.N1_N2_ML_MS).states
 indices_to_keep = []
 for i, (n1, n2, ml, ms) in enumerate(states):
     if (n1 == 0 or n1 == 1) and ml >= 0 and ms > 0:

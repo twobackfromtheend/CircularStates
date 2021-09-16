@@ -168,16 +168,15 @@ def load_hamiltonian(name: str) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.
 if __name__ == '__main__':
     GENERATED_HAMILTONIANS_FOLDER.mkdir(exist_ok=True)
 
-    n = 51
-    # n = 56
-    stark_map = arc.StarkMap(arc.Hydrogen())
+    n = 60
+    # stark_map = arc.StarkMap(arc.Hydrogen())
     # stark_map = arc.StarkMap(arc.Strontium88())
     # stark_map = arc.StarkMap(arc.Rubidium())
-    # stark_map = arc.StarkMap(arc.Rubidium87())
+    stark_map = arc.StarkMap(arc.Rubidium87())
 
     states, matrices = generate_matrices(n, stark_map)
 
-    # save_file_name = f"{n}_{stark_map.atom.__class__.__name__.lower()}.npz"
+
     save_file_name = f"{n}_{stark_map.atom.__class__.__name__.lower()}_relevant.npz"
     np.savez_compressed(
         GENERATED_HAMILTONIANS_FOLDER / save_file_name,

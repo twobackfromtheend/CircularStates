@@ -20,10 +20,10 @@ def nljmj_to_nlmlms(n) -> np.ndarray:
     :param n:
     :return:
     """
-    source_states = States(n, Basis.N_L_J_MJ)
-    target_states = States(n, Basis.N_L_ML_MS)
-    # source_states = States(n, Basis.N_L_J_MJ_RELEVANT)
-    # target_states = States(n, Basis.N_L_ML_MS_RELEVANT)
+    # source_states = States(n, Basis.N_L_J_MJ)
+    # target_states = States(n, Basis.N_L_ML_MS)
+    source_states = States(n, Basis.N_L_J_MJ_RELEVANT)
+    target_states = States(n, Basis.N_L_ML_MS_RELEVANT)
 
     dimension = len(source_states.states)
     identity = np.identity(dimension)
@@ -67,7 +67,8 @@ def nlmlms_to_n1n2mlms(n) -> np.ndarray:
     :param n:
     :return:
     """
-    source_states = States(n, Basis.N_L_ML_MS)
+    # source_states = States(n, Basis.N_L_ML_MS)
+    source_states = States(n, Basis.N_L_ML_MS_RELEVANT)
     target_states = States(n, Basis.N1_N2_ML_MS)
 
     dimension = len(source_states.states)
@@ -107,10 +108,10 @@ def nlmlms_to_n1n2mlms(n) -> np.ndarray:
 if __name__ == '__main__':
     GENERATED_TRANSFORMATIONS_FOLDER.mkdir(exist_ok=True)
 
-    n = 51
+    n = 60
 
-    # transform = nljmj_to_nlmlms(n)
-    # np.savez_compressed(GENERATED_TRANSFORMATIONS_FOLDER / f"{n}_nljmj_to_nlmlms.npz", transform)
+    transform = nljmj_to_nlmlms(n)
+    np.savez_compressed(GENERATED_TRANSFORMATIONS_FOLDER / f"{n}_nljmj_to_nlmlms_relevant.npz", transform)
 
-    transform = nlmlms_to_n1n2mlms(n)
-    np.savez_compressed(GENERATED_TRANSFORMATIONS_FOLDER / f"{n}_nlmlms_to_n1n2mlms.npz", transform)
+    # transform = nlmlms_to_n1n2mlms(n)
+    # np.savez_compressed(GENERATED_TRANSFORMATIONS_FOLDER / f"{n}_nlmlms_to_n1n2mlms.npz", transform)
